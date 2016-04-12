@@ -5,7 +5,35 @@
 #define PLUGIN_030
 #define PLUGIN_ID_030         30
 #define PLUGIN_NAME_030       "CO2 input"
-#define PLUGIN_VALUENAME1_030 "CO2"
+#define PLUGIN_VALUENAME1_030 "up"
+#define PLUGIN_VALUENAME2_030 "down"
+
+volatile unsigned long lastDown=0;
+volatile unsigned long lastUp=0;
+volatile unsigned long downDuration=0;
+volatile unsigned long upDuration=0;
+
+void change()
+{
+  if (digitalRead(0)==HIGH)
+    rising();
+  else
+    falling();
+}
+
+void rising()
+{
+  lastUp = millis();
+  downDuration = lastUp - lastDown;
+}
+
+void falling()
+{
+  lastDown = millis();
+  upDuration = lastDown - lastUp;
+}
+
+
 boolean Plugin_030(byte function, struct EventStruct *event, String& string)
 {
   boolean success = false;
@@ -15,6 +43,8 @@ boolean Plugin_030(byte function, struct EventStruct *event, String& string)
 
     case PLUGIN_DEVICE_ADD:
       {
+        attachInterrupt(digitalPinToInterrupt(0), change, CHANGE);
+        
         Device[++deviceCount].Number = PLUGIN_ID_030;
         Device[deviceCount].Type = DEVICE_TYPE_ANALOG;
         Device[deviceCount].VType = SENSOR_TYPE_SINGLE;
@@ -22,7 +52,7 @@ boolean Plugin_030(byte function, struct EventStruct *event, String& string)
         Device[deviceCount].PullUpOption = false;
         Device[deviceCount].InverseLogicOption = false;
         Device[deviceCount].FormulaOption = true;
-        Device[deviceCount].ValueCount = 1;
+        Device[deviceCount].ValueCount = 2;
         Device[deviceCount].SendDataOption = true;
         Device[deviceCount].TimerOption = true;
         Device[deviceCount].GlobalSyncOption = true;
@@ -38,15 +68,20 @@ boolean Plugin_030(byte function, struct EventStruct *event, String& string)
     case PLUGIN_GET_DEVICEVALUENAMES:
       {
         strcpy_P(ExtraTaskSettings.TaskDeviceValueNames[0], PSTR(PLUGIN_VALUENAME1_030));
+        strcpy_P(ExtraTaskSettings.TaskDeviceValueNames[1], PSTR(PLUGIN_VALUENAME2_030));
         break;
       }
       
     case PLUGIN_READ:
       {
         int value = analogRead(A0);
-        UserVar[event->BaseVarIndex] = (float)value;
-        String log = F("ADC  : Analog value: ");
-        log += value;
+        UserVar[event->BaseVarIndex] = (float)upDuration;
+        UserVar[event->BaseVarIndex+1] = (float)downDuration;
+        String log = F("ADC  : Up duration: ");
+        log += upDuration;
+        addLog(LOG_LEVEL_INFO,log);
+        log = F("ADC  : Down duration: ");
+        log += downDuration;
         addLog(LOG_LEVEL_INFO,log);
         success = true;
         break;
@@ -54,3 +89,5 @@ boolean Plugin_030(byte function, struct EventStruct *event, String& string)
   }
   return success;
 }
+
+
