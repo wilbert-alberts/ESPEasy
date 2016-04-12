@@ -13,7 +13,7 @@ volatile unsigned long lastUp=0;
 volatile unsigned long downDuration=0;
 volatile unsigned long upDuration=0;
 
-void change()
+static void change()
 {
   if (digitalRead(0)==HIGH)
     rising();
@@ -21,13 +21,13 @@ void change()
     falling();
 }
 
-void rising()
+static void rising()
 {
   lastUp = millis();
   downDuration = lastUp - lastDown;
 }
 
-void falling()
+static void falling()
 {
   lastDown = millis();
   upDuration = lastDown - lastUp;
@@ -43,10 +43,8 @@ boolean Plugin_030(byte function, struct EventStruct *event, String& string)
 
     case PLUGIN_DEVICE_ADD:
       {
-        attachInterrupt(digitalPinToInterrupt(0), change, CHANGE);
-        
         Device[++deviceCount].Number = PLUGIN_ID_030;
-        Device[deviceCount].Type = DEVICE_TYPE_ANALOG;
+        Device[deviceCount].Type = DEVICE_TYPE_SINGLE;
         Device[deviceCount].VType = SENSOR_TYPE_SINGLE;
         Device[deviceCount].Ports = 0;
         Device[deviceCount].PullUpOption = false;
@@ -56,6 +54,7 @@ boolean Plugin_030(byte function, struct EventStruct *event, String& string)
         Device[deviceCount].SendDataOption = true;
         Device[deviceCount].TimerOption = true;
         Device[deviceCount].GlobalSyncOption = true;
+        attachInterrupt(digitalPinToInterrupt(Settings.TaskDevicePin1[event->TaskIndex]), change, CHANGE);        
         break;
       }
 
@@ -77,10 +76,10 @@ boolean Plugin_030(byte function, struct EventStruct *event, String& string)
         int value = analogRead(A0);
         UserVar[event->BaseVarIndex] = (float)upDuration;
         UserVar[event->BaseVarIndex+1] = (float)downDuration;
-        String log = F("ADC  : Up duration: ");
+        String log = F("CO2  : Up duration: ");
         log += upDuration;
         addLog(LOG_LEVEL_INFO,log);
-        log = F("ADC  : Down duration: ");
+        log = F("CO2  : Down duration: ");
         log += downDuration;
         addLog(LOG_LEVEL_INFO,log);
         success = true;
