@@ -15,7 +15,7 @@ boolean Plugin_030(byte function, struct EventStruct *event, String& string)
 
     case PLUGIN_DEVICE_ADD:
       {
-        Device[++deviceCount].Number = PLUGIN_ID_002;
+        Device[++deviceCount].Number = PLUGIN_ID_030;
         Device[deviceCount].Type = DEVICE_TYPE_ANALOG;
         Device[deviceCount].VType = SENSOR_TYPE_SINGLE;
         Device[deviceCount].Ports = 0;
@@ -31,7 +31,7 @@ boolean Plugin_030(byte function, struct EventStruct *event, String& string)
 
     case PLUGIN_GET_DEVICENAME:
       {
-        string = F(PLUGIN_NAME_002);
+        string = F(PLUGIN_NAME_030);
         break;
       }
 
