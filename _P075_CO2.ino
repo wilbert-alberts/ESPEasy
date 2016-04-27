@@ -1,12 +1,12 @@
 //#######################################################################################################
-//#################################### Plugin 030: CO2    ###############################################
+//#################################### Plugin 075: CO2    ###############################################
 //#######################################################################################################
 
-#define PLUGIN_030
-#define PLUGIN_ID_030         30
-#define PLUGIN_NAME_030       "CO2 input"
-#define PLUGIN_VALUENAME1_030 "up"
-#define PLUGIN_VALUENAME2_030 "down"
+#define PLUGIN_075
+#define PLUGIN_ID_075         75
+#define PLUGIN_NAME_075       "CO2 input"
+#define PLUGIN_VALUENAME1_075 "up"
+#define PLUGIN_VALUENAME2_075 "down"
 
 volatile unsigned long lastDown=0;
 volatile unsigned long lastUp=0;
@@ -34,7 +34,7 @@ static void falling()
 }
 
 
-boolean Plugin_030(byte function, struct EventStruct *event, String& string)
+boolean Plugin_075(byte function, struct EventStruct *event, String& string)
 {
   boolean success = false;
 
@@ -43,7 +43,7 @@ boolean Plugin_030(byte function, struct EventStruct *event, String& string)
 
     case PLUGIN_DEVICE_ADD:
       {
-        Device[++deviceCount].Number = PLUGIN_ID_030;
+        Device[++deviceCount].Number = PLUGIN_ID_075;
         Device[deviceCount].Type = DEVICE_TYPE_SINGLE;
         Device[deviceCount].VType = SENSOR_TYPE_SINGLE;
         Device[deviceCount].Ports = 0;
@@ -59,14 +59,14 @@ boolean Plugin_030(byte function, struct EventStruct *event, String& string)
 
     case PLUGIN_GET_DEVICENAME:
       {
-        string = F(PLUGIN_NAME_030);
+        string = F(PLUGIN_NAME_075);
         break;
       }
 
     case PLUGIN_GET_DEVICEVALUENAMES:
       {
-        strcpy_P(ExtraTaskSettings.TaskDeviceValueNames[0], PSTR(PLUGIN_VALUENAME1_030));
-        strcpy_P(ExtraTaskSettings.TaskDeviceValueNames[1], PSTR(PLUGIN_VALUENAME2_030));
+        strcpy_P(ExtraTaskSettings.TaskDeviceValueNames[0], PSTR(PLUGIN_VALUENAME1_075));
+        strcpy_P(ExtraTaskSettings.TaskDeviceValueNames[1], PSTR(PLUGIN_VALUENAME2_075));
         break;
       }
 
