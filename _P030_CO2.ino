@@ -54,7 +54,6 @@ boolean Plugin_030(byte function, struct EventStruct *event, String& string)
         Device[deviceCount].SendDataOption = true;
         Device[deviceCount].TimerOption = true;
         Device[deviceCount].GlobalSyncOption = true;
-        attachInterrupt(digitalPinToInterrupt(Settings.TaskDevicePin1[event->TaskIndex]), change, CHANGE);        
         break;
       }
 
@@ -70,10 +69,24 @@ boolean Plugin_030(byte function, struct EventStruct *event, String& string)
         strcpy_P(ExtraTaskSettings.TaskDeviceValueNames[1], PSTR(PLUGIN_VALUENAME2_030));
         break;
       }
+
+    case PLUGIN_INIT:
+      {
+        String log = F("INIT : CO2 for pin: ");
+        log += Settings.TaskDevicePin1[event->TaskIndex];
+        addLog(LOG_LEVEL_INFO,log);
+        pinMode(Settings.TaskDevicePin1[event->TaskIndex], INPUT_PULLUP);
+        Plugin_003_pulseinit(Settings.TaskDevicePin1[event->TaskIndex], event->TaskIndex);
+        attachInterrupt(digitalPinToInterrupt(Settings.TaskDevicePin1[event->TaskIndex]), change, CHANGE);        
+        success = true;
+        break;
+      }
+
+
       
     case PLUGIN_READ:
       {
-        int value = analogRead(A0);
+        //int value = analogRead(A0);
         UserVar[event->BaseVarIndex] = (float)upDuration;
         UserVar[event->BaseVarIndex+1] = (float)downDuration;
         String log = F("CO2  : Up duration: ");
