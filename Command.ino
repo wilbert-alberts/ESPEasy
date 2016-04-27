@@ -107,6 +107,89 @@ void ExecuteCommand(byte source, const char *Line)
       rulesProcessing(event);
   }
 
+  if (strcasecmp_P(Command, PSTR("SendTo")) == 0)
+  {
+    success = true;
+    String event = Line;
+    event.replace(" ", ",");
+    int index = event.indexOf(',');
+    if (index > 0)
+    {
+      event = event.substring(index+1);
+      index = event.indexOf(',');
+      if (index > 0)
+      {
+        event = event.substring(index+1);
+        SendUDPCommand(Par1, (char*)event.c_str(), event.length());
+      }      
+    }
+  }
+
+  if (strcasecmp_P(Command, PSTR("Publish")) == 0)
+  {
+    success = true;
+    String event = Line;
+    event.replace(" ", ",");
+    int index = event.indexOf(',');
+    if (index > 0)
+    {
+      event = event.substring(index+1);
+      index = event.indexOf(',');
+      if (index > 0)
+      {
+        String topic = event.substring(0,index);
+        String value = event.substring(index+1);
+        MQTTclient.publish(topic, value);
+      }      
+    }
+  }
+  
+  if (strcasecmp_P(Command, PSTR("SendToUDP")) == 0)
+  {
+    success = true;
+    String strLine = Line;
+    String ip = parseString(strLine,2);
+    String port = parseString(strLine,3);
+    int msgpos = getParamStartPos(strLine,4);
+    String message = strLine.substring(msgpos);
+    byte ipaddress[4];
+    str2ip((char*)ip.c_str(), ipaddress);
+    IPAddress UDP_IP(ipaddress[0], ipaddress[1], ipaddress[2], ipaddress[3]);
+    portUDP.beginPacket(UDP_IP, port.toInt());
+    portUDP.write(message.c_str(), message.length());
+    portUDP.endPacket();
+  }
+
+  if (strcasecmp_P(Command, PSTR("SendToHTTP")) == 0)
+  {
+    success = true;
+    String strLine = Line;
+    String host = parseString(strLine,2);
+    String port = parseString(strLine,3);
+    int pathpos = getParamStartPos(strLine,4);
+    String path = strLine.substring(pathpos);
+    WiFiClient client;
+    if (client.connect(host.c_str(), port.toInt()))
+    {
+      client.print(String("GET ") + path + " HTTP/1.1\r\n" +
+                 "Host: " + host + "\r\n" +
+                 "Connection: close\r\n\r\n");
+
+      unsigned long timer = millis() + 200;
+      while (!client.available() && millis() < timer)
+        delay(1);
+
+      while (client.available()) {
+        String line = client.readStringUntil('\n');
+        if (line.substring(0, 15) == "HTTP/1.1 200 OK")
+          addLog(LOG_LEVEL_DEBUG, line);
+        delay(1);
+      }
+      client.flush();
+      client.stop();
+    }
+  }
+
   // ****************************************
   // special commands for old nodo plugin
   // ****************************************
@@ -274,10 +357,13 @@ void ExecuteCommand(byte source, const char *Line)
     Serial.print(F("  Free mem      : ")); Serial.println(FreeMem());
   }
 
+  yield();
+  
   if (success)
     status += F("\nOk");
   else  
     status += F("\nUnknown command!");
   SendStatus(source,status);
+  yield();
 }
 

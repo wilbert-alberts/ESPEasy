@@ -82,6 +82,17 @@
 #define DEFAULT_PORT        8080                // Enter your Domoticz Server port value
 #define DEFAULT_DELAY       60                  // Enter your Send delay in seconds
 #define DEFAULT_AP_KEY      "configesp"         // Enter network WPA key for AP (config) mode
+
+#define DEFAULT_USE_STATIC_IP   false           // true or false enabled or disabled set static IP
+#define DEFAULT_IP          "192.168.0.50"      // Enter your IP address
+#define DEFAULT_DNS         "192.168.0.1"       // Enter your DNS
+#define DEFAULT_GW          "192.168.0.1"       // Enter your gateway
+#define DEFAULT_SUBNET      "255.255.255.0"     // Enter your subnet
+
+#define DEFAULT_MQTT_TEMPLATE false              // true or false enabled or disabled set mqqt sub and pub
+#define DEFAULT_MQTT_PUB    "sensors/espeasy/%sysname%/%tskname%/%valname%" // Enter your pub
+#define DEFAULT_MQTT_SUB    "sensors/espeasy/%sysname%/#" // Enter your sub
+
 #define DEFAULT_PROTOCOL    1                   // Protocol used for controller communications
 //   1 = Domoticz HTTP
 //   2 = Domoticz MQTT
@@ -100,7 +111,7 @@
 #define ESP_PROJECT_PID           2015050101L
 #define ESP_EASY
 #define VERSION                             9
-#define BUILD                              99
+#define BUILD                             105
 #define REBOOT_ON_MAX_CONNECTION_FAILURES  30
 #define FEATURE_SPIFFS                  false
 
@@ -132,6 +143,8 @@
 #define SYSTEM_TIMER_MAX                    8
 #define SYSTEM_CMD_TIMER_MAX                2
 #define PINSTATE_TABLE_MAX                 32
+#define RULES_MAX_SIZE                   2048
+#define RULES_MAX_NESTING_LEVEL             3
 
 #define PIN_MODE_UNDEFINED                  0
 #define PIN_MODE_INPUT                      1
@@ -442,6 +455,8 @@ unsigned long loopCounter = 0;
 unsigned long loopCounterLast = 0;
 unsigned long loopCounterMax = 1;
 
+String eventBuffer = "";
+
 /*********************************************************************************************\
  * SETUP
 \*********************************************************************************************/
@@ -642,6 +657,12 @@ void run10TimesPerSecond()
   start = micros();
   timer100ms = millis() + 100;
   PluginCall(PLUGIN_TEN_PER_SECOND, 0, dummyString);
+  checkUDP();
+  if (Settings.UseRules && eventBuffer.length() > 0)
+  {
+    rulesProcessing(eventBuffer);
+    eventBuffer = "";
+  }
   elapsed = micros() - start;
 }
 
@@ -940,7 +961,6 @@ void backgroundtasks()
   if (wifiSetup)
     dnsServer.processNextRequest();
 
-  checkUDP();
   WebServer.handleClient();
   MQTTclient.loop();
   statusLED(false);

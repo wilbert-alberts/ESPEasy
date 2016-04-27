@@ -1454,7 +1454,7 @@ void handle_i2cscanner() {
           reply += F("DS1307 RTC");
           break;
         case 0x76:
-          reply += F("BME280");
+          reply += F("BME280/BMP280");
           break;
         case 0x77:
           reply += F("BMP085");
@@ -1562,6 +1562,14 @@ void handle_control() {
 
   String webrequest = WebServer.arg("cmd");
 
+  // in case of event, store to buffer and return...
+  String command = parseString(webrequest, 1);
+  if (command == F("event"))
+  {
+    eventBuffer = webrequest.substring(6);
+    WebServer.send(200, "text/html", "OK");
+  }
+  
   struct EventStruct TempEvent;
   parseCommandString(&TempEvent, webrequest);
   TempEvent.Source = VALUE_SOURCE_HTTP;

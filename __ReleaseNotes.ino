@@ -1,3 +1,32 @@
+// R105 26-04-2016
+// Bugfix for event names ending with "on "
+// Added support for SHT1X sensors like the SHT10 Soil Moisture sensor (contributed by MarkBergsma)
+
+// R104 25-04-2016
+// Added a few lowlevel networking commands, to be used in the rules section:
+//   SendToUDP <ip>,<port>,<message>  sample: SendToUDP 192.168.0.123,65500,Hello
+//   SendToHTTP <ip>,<port>,<path>    sample: SendToHTTP 192.168.0.8,8080,/json.htm
+// Reduced flash load size to 2048 in rules engine and use static pointer to save memory on recursive calls
+// Max nesting level on rules is 3 levels deep
+
+// R103 19-04-2016
+// Upon request, added option for factory default static IP settings.
+
+// R102 19-04-2016
+// Added support for BMP280  (contributed by PM-CZ)
+
+// R101 17-04-2016
+// bugfix P020, the savetasksettings was obsolete, the loadtasksettings was not...
+// Use hostname in C008 protocol if the controller hostname is configured (instead of IP)
+
+// R100 13-04-2016
+// Moved UDP handling from background tasks as it could lead to recursive function call issues on globalsync receive
+// Some more experimental features:
+//  - Added option to send rule events using http control page: /control?cmd=event,<event> (single event buffer limitation applies!)
+//  - Added option to send rule events using openhab MQTT protocol: publish event,<event> to <template>/cmd (single event buffer limitation applies!)
+//  - Added 'SendTo <unit>,<command>' command for remote unit control commands (uses the internal peer to peer UDP messaging)
+//  - Added 'Publish <topic>,<value>' command to send remote commands to other ESP using MQTT broker
+
 // R99 11-04-2016
 // Moved PLUGIN_INIT call from webserver form post request after savesettings
 // Device table no longer displayed when task is in edit mode, to reduce page size.
